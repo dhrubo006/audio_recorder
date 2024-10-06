@@ -2,6 +2,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from datetime import datetime
+import uvicorn
 
 app = FastAPI()
 
@@ -31,3 +32,8 @@ async def upload_audio(file: UploadFile = File(...)):
         return {"message": "Audio uploaded successfully", "file_path": file_location}
     except Exception as e:
         return {"message": f"Failed to upload audio: {str(e)}"}
+
+
+
+if __name__ == '__main__':
+    uvicorn.run(app, host='localhost', port=8000)
