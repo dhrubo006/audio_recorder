@@ -1,95 +1,94 @@
 import React, { useState } from "react";
-import { ReactMediaRecorder } from "react-media-recorder";
-import axios from "axios";
 
-const AudioRecorder = () => {
-  const [showPause, setShowPause] = useState(false);
+const AudioStreamer = () => {
+  const [isStreaming, setIsStreaming] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [audioURL, setAudioURL] = useState(null);
   const [error, setError] = useState(null);
+  const [socket, setSocket] = useState(null);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
 
-  const handleStopRecording = (blobUrl, blob) => {
-    setAudioURL(blobUrl);
-    const formData = new FormData();
-    formData.append("file", blob, "audio.wav");
+  const startStreaming = () => {
+    const ws = new WebSocket("ws://localhost:8000/audio-stream");
 
-    // Send the audio file to the backend
-    axios
-      .post("http://localhost:8000/upload-audio/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        console.log("Audio uploaded successfully:", response.data);
-        setAudioURL(response.data.audioUrl); // assuming your backend returns a URL for the uploaded file
-      })
-      .catch((error) => {
-        console.error("Error uploading audio:", error);
-        setError("Failed to upload audio. Please try again.");
-      });
+    ws.onopen = () => {
+      setSocket(ws);
+      setIsStreaming(true);
+
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+          const recorder = new MediaRecorder(stream);
+          setMediaRecorder(recorder);
+
+          recorder.ondataavailable = (event) => {
+            if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+              ws.send(event.data);
+            }
+          };
+
+          recorder.onerror = (e) => {
+            console.error("Recording error:", e);
+            setError("Error during recording. Please try again.");
+            stopStreaming();
+          };
+
+          recorder.start(1000); // Send data every second (1000 ms)
+        })
+        .catch((err) => {
+          console.error("Error accessing microphone:", err);
+          setError("Could not access microphone. Please check permissions.");
+        });
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      setError("Could not connect to the server. Please try again.");
+      stopStreaming();
+    };
+  };
+
+  const stopStreaming = () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+    }
+    if (socket) {
+      socket.close();
+    }
+    setIsStreaming(false);
+    setIsPaused(false);
+    setSocket(null);
+    setMediaRecorder(null);
+  };
+
+  const pauseStreaming = () => {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const resumeStreaming = () => {
+    if (mediaRecorder && mediaRecorder.state === "paused") {
+      mediaRecorder.resume();
+      setIsPaused(false);
+    }
   };
 
   return (
     <div>
-      <ReactMediaRecorder
-        audio
-        onStop={handleStopRecording}
-        render={({ startRecording, stopRecording, pauseRecording, resumeRecording, mediaBlobUrl }) => (
-          <div>
-            {!showPause ? (
-              <button
-                onClick={() => {
-                  startRecording();
-                  setShowPause(true);
-                }}
-              >
-                Record
-              </button>
-            ) : (
-              <>
-                {!isPaused ? (
-                  <button
-                    onClick={() => {
-                      pauseRecording();
-                      setIsPaused(true);
-                    }}
-                  >
-                    Pause
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      resumeRecording();
-                      setIsPaused(false);
-                    }}
-                  >
-                    Resume
-                  </button>
-                )}
+      {!isStreaming ? (
+        <button onClick={startStreaming}>Start Streaming</button>
+      ) : (
+        <>
+          {!isPaused ? (
+            <button onClick={pauseStreaming}>Pause Streaming</button>
+          ) : (
+            <button onClick={resumeStreaming}>Resume Streaming</button>
+          )}
 
-                <button
-                  onClick={() => {
-                    stopRecording();
-                    setShowPause(false);
-                    setIsPaused(false); // Reset the pause state after stopping
-                  }}
-                >
-                  Stop
-                </button>
-              </>
-            )}
-
-            {mediaBlobUrl && <audio src={mediaBlobUrl} controls />}
-          </div>
-        )}
-      />
-      
-      {audioURL && (
-        <div>
-          <p>Uploaded Audio:</p>
-          <audio src={audioURL} controls />
-        </div>
+          <button onClick={stopStreaming} style={{ marginLeft: '10px' }}>
+            Stop Streaming
+          </button>
+        </>
       )}
 
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -97,4 +96,4 @@ const AudioRecorder = () => {
   );
 };
 
-export default AudioRecorder;
+export default AudioStreamer;

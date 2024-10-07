@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from datetime import datetime
@@ -33,6 +33,22 @@ async def upload_audio(file: UploadFile = File(...)):
     except Exception as e:
         return {"message": f"Failed to upload audio: {str(e)}"}
 
+# WebSocket endpoint for streaming audio
+@app.websocket("/audio-stream")
+async def audio_stream(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            # Receive binary data from the client
+            data = await websocket.receive_bytes()
+            
+            # Print the audio data in binary format to the terminal
+            print("Received audio chunk:", data)
+            
+    except Exception as e:
+        print("WebSocket connection closed:", e)
+    finally:
+        await websocket.close()
 
 
 if __name__ == '__main__':
