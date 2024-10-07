@@ -21,7 +21,7 @@ os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 
 @app.post("/upload-audio/")
-async def upload_audio(file: UploadFile = File(...)):
+async def upload_audio(file: UploadFile = File(...)):   
     try:
         # Save the audio file with a timestamp to avoid overwriting
         file_location = os.path.join(
@@ -41,6 +41,10 @@ async def upload_audio(file: UploadFile = File(...)):
 # WebSocket endpoint for streaming audio
 @app.websocket("/audio-stream")
 async def audio_stream(websocket: WebSocket):
+    
+    '''DOC: it recieves the audio data from the front end and prints the data in binary format to the terminal.
+      when the front end stops sending data it prints Websocket connection closed'''
+    
     await websocket.accept()
     try:
         while True:
