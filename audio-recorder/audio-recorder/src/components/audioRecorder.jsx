@@ -1,74 +1,73 @@
 import React, { useState } from "react";
+import RecordRTC from "recordrtc";
 
 const AudioStreamer = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [error, setError] = useState(null);
+  const [recorder, setRecorder] = useState(null);
   const [socket, setSocket] = useState(null);
-  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [error, setError] = useState(null);
 
-  const startStreaming = () => {
+  const startStreaming = async () => {
     const ws = new WebSocket("ws://localhost:8000/audio-stream");
 
-    ws.onopen = () => {
+    ws.onopen = async () => {
       setSocket(ws);
-      setIsStreaming(true);
 
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then((stream) => {
-          const recorder = new MediaRecorder(stream);
-          setMediaRecorder(recorder);
-
-          recorder.ondataavailable = (event) => {
-            if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
-              ws.send(event.data);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        const rec = new RecordRTC(stream, {
+          type: "audio",
+          mimeType: "audio/wav",
+          timeSlice: 1000, // Send audio chunks every second
+          ondataavailable: (blob) => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(blob); // Send each WAV chunk to server
             }
-          };
-
-          recorder.onerror = (e) => {
-            console.error("Recording error:", e);
-            setError("Error during recording. Please try again.");
-            stopStreaming();
-          };
-
-          recorder.start(1000); // Send data every second (1000 ms)
-        })
-        .catch((err) => {
-          console.error("Error accessing microphone:", err);
-          setError("Could not access microphone. Please check permissions.");
+          }
         });
+
+        setRecorder(rec);
+        setIsStreaming(true);
+
+        rec.startRecording();
+      } catch (err) {
+        console.error("Error accessing microphone:", err);
+        setError("Could not access microphone. Please check permissions.");
+      }
     };
 
     ws.onerror = (error) => {
       console.error("WebSocket error:", error);
       setError("Could not connect to the server. Please try again.");
-      stopStreaming();
     };
   };
 
   const stopStreaming = () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop();
-    }
-    if (socket) {
-      socket.close();
+    if (recorder) {
+      recorder.stopRecording(() => {
+        if (socket) {
+          socket.close();
+        }
+      });
     }
     setIsStreaming(false);
     setIsPaused(false);
     setSocket(null);
-    setMediaRecorder(null);
+    setRecorder(null);
   };
 
   const pauseStreaming = () => {
-    if (mediaRecorder && mediaRecorder.state === "recording") {
-      mediaRecorder.pause();
+    if (recorder) {
+      recorder.pauseRecording();
       setIsPaused(true);
     }
   };
 
   const resumeStreaming = () => {
-    if (mediaRecorder && mediaRecorder.state === "paused") {
-      mediaRecorder.resume();
+    if (recorder) {
+      recorder.resumeRecording();
       setIsPaused(false);
     }
   };
