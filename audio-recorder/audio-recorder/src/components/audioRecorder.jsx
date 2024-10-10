@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import RecordRTC from "recordrtc";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 
 const AudioStreamer = () => {
   const [isStreaming, setIsStreaming] = useState(false);
@@ -7,9 +8,8 @@ const AudioStreamer = () => {
   const [recorder, setRecorder] = useState(null);
   const [socket, setSocket] = useState(null);
   const [error, setError] = useState(null);
-  const [showResult, setShowResult] = useState(false); // State for showing result box
-  const [notes, setNotes] = useState(""); // State for notes
-  const [transcription, setTranscription] = useState(""); // State for transcription
+
+  const navigate = useNavigate(); // Hook for navigating between pages
 
   const startStreaming = async () => {
     const ws = new WebSocket("ws://localhost:8000/audio-stream");
@@ -18,8 +18,10 @@ const AudioStreamer = () => {
       setSocket(ws);
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+
         const rec = new RecordRTC(stream, {
           type: "audio",
           mimeType: "audio/wav",
@@ -28,12 +30,11 @@ const AudioStreamer = () => {
             if (ws.readyState === WebSocket.OPEN) {
               ws.send(blob); // Send each WAV chunk to server
             }
-          }
+          },
         });
 
         setRecorder(rec);
         setIsStreaming(true);
-        setShowResult(false); // Hide result box when starting streaming
 
         rec.startRecording();
       } catch (err) {
@@ -61,21 +62,8 @@ const AudioStreamer = () => {
     setSocket(null);
     setRecorder(null);
 
-    // Fetch notes and transcription via HTTP requests
-    try {
-      const notesResponse = await fetch("http://localhost:8000/get-notes/");
-      const notesData = await notesResponse.json();
-      setNotes(notesData.notes);
-
-      const transcriptionResponse = await fetch("http://localhost:8000/get-transcription/");
-      const transcriptionData = await transcriptionResponse.json();
-      setTranscription(transcriptionData.transcription);
-
-    } catch (error) {
-      console.error("Error fetching notes or transcription:", error);
-    }
-
-    setShowResult(true); // Show the result box after stopping the stream
+    // Navigate to the result page after stopping the stream
+    navigate("/results");
   };
 
   const pauseStreaming = () => {
@@ -94,6 +82,7 @@ const AudioStreamer = () => {
 
   return (
     <div>
+      <h1>Audio Recorder App</h1>
       {!isStreaming ? (
         <button onClick={startStreaming}>Start Streaming</button>
       ) : (
@@ -104,27 +93,13 @@ const AudioStreamer = () => {
             <button onClick={resumeStreaming}>Resume Streaming</button>
           )}
 
-          <button onClick={stopStreaming} style={{ marginLeft: '10px' }}>
+          <button onClick={stopStreaming} style={{ marginLeft: "10px" }}>
             Stop Streaming
           </button>
         </>
       )}
 
       {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {/* Show box with notes and transcription when streaming stops */}
-      {showResult && (
-        <div style={{ display: 'flex', border: '1px solid black', marginTop: '20px' }}>
-          <div style={{ flex: 1, padding: '10px', borderRight: '1px solid black' }}>
-            <h3>Notes</h3>
-            <p>{notes}</p>
-          </div>
-          <div style={{ flex: 1, padding: '10px' }}>
-            <h3>Transcription</h3>
-            <p>{transcription}</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

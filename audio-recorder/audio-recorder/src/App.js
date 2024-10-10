@@ -1,13 +1,17 @@
 import React from "react";
-import AudioRecorder from "./components/audioRecorder";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import AudioStreamer from "./components/audioRecorder"; // Streaming page
+import ResultPage from "./components/ResultPage"; // New page to show Notes and Transcription
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <h1>Audio Recorder App</h1>
-      <AudioRecorder />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<AudioStreamer />} />
+        <Route path="/results" element={<ResultPage />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
