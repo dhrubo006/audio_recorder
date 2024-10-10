@@ -17,18 +17,36 @@ const NotesBox = () => {
     fetchNotes();
   }, []);
 
+  const handleNotesChange = (event) => {
+    setNotes(event.target.value);
+  };
+
   return (
     <div style={{ 
       flex: 1, 
       border: '1px solid black', 
       padding: '10px', 
       marginRight: '10px', 
-      height: '100vh', // Set height to 100% of the view height
-      overflowY: 'auto' // Enable scrolling for overflow content
+      height: '100vh', 
+      overflowY: 'auto' 
   }}>
-      <h3>Notes</h3>
-      <p>{notes}</p>
-    </div>
+    <h3>Notes</h3>
+    <textarea 
+      value={notes} 
+      onChange={handleNotesChange} 
+      style={{
+        width: '95%', 
+        height: '100%', 
+        padding: '10px', 
+        fontSize: '16px',
+        resize: 'vertical', 
+        border: '1px solid #ccc',
+        overflowX: 'hidden',
+        whiteSpace: 'pre-wrap',
+      }}
+    />
+
+  </div>
   );
 };
 
