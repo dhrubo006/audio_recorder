@@ -38,20 +38,27 @@ async def upload_audio(file: UploadFile = File(...)):
         return {"message": f"Failed to upload audio: {str(e)}"}
 
 
-# WebSocket endpoint for streaming audio
+# New endpoint to get notes
+@app.get("/get-notes/")
+async def get_notes():
+    notes = "These are some example notes about the audio."
+    return {"notes": notes}
+
+
+# New endpoint to get transcription
+@app.get("/get-transcription/")
+async def get_transcription():
+    transcription = "This is a dummy transcription of the audio."
+    return {"transcription": transcription}
+
+
+# WebSocket endpoint for streaming audio (optional, as it was previously used)
 @app.websocket("/audio-stream")
 async def audio_stream(websocket: WebSocket):
-    
-    '''DOC: it recieves the audio data from the front end and prints the data in binary format to the terminal.
-      when the front end stops sending data it prints Websocket connection closed'''
-    
     await websocket.accept()
     try:
         while True:
-            # Receive binary data from the client
             data = await websocket.receive_bytes()
-
-            # Print the audio data in binary format to the terminal
             print("Received audio chunk:", data)
 
     except WebSocketDisconnect:

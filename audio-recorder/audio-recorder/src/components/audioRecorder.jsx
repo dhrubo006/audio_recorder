@@ -7,6 +7,9 @@ const AudioStreamer = () => {
   const [recorder, setRecorder] = useState(null);
   const [socket, setSocket] = useState(null);
   const [error, setError] = useState(null);
+  const [showResult, setShowResult] = useState(false); // State for showing result box
+  const [notes, setNotes] = useState(""); // State for notes
+  const [transcription, setTranscription] = useState(""); // State for transcription
 
   const startStreaming = async () => {
     const ws = new WebSocket("ws://localhost:8000/audio-stream");
@@ -30,6 +33,7 @@ const AudioStreamer = () => {
 
         setRecorder(rec);
         setIsStreaming(true);
+        setShowResult(false); // Hide result box when starting streaming
 
         rec.startRecording();
       } catch (err) {
@@ -44,7 +48,7 @@ const AudioStreamer = () => {
     };
   };
 
-  const stopStreaming = () => {
+  const stopStreaming = async () => {
     if (recorder) {
       recorder.stopRecording(() => {
         if (socket) {
@@ -56,6 +60,22 @@ const AudioStreamer = () => {
     setIsPaused(false);
     setSocket(null);
     setRecorder(null);
+
+    // Fetch notes and transcription via HTTP requests
+    try {
+      const notesResponse = await fetch("http://localhost:8000/get-notes/");
+      const notesData = await notesResponse.json();
+      setNotes(notesData.notes);
+
+      const transcriptionResponse = await fetch("http://localhost:8000/get-transcription/");
+      const transcriptionData = await transcriptionResponse.json();
+      setTranscription(transcriptionData.transcription);
+
+    } catch (error) {
+      console.error("Error fetching notes or transcription:", error);
+    }
+
+    setShowResult(true); // Show the result box after stopping the stream
   };
 
   const pauseStreaming = () => {
@@ -91,6 +111,20 @@ const AudioStreamer = () => {
       )}
 
       {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {/* Show box with notes and transcription when streaming stops */}
+      {showResult && (
+        <div style={{ display: 'flex', border: '1px solid black', marginTop: '20px' }}>
+          <div style={{ flex: 1, padding: '10px', borderRight: '1px solid black' }}>
+            <h3>Notes</h3>
+            <p>{notes}</p>
+          </div>
+          <div style={{ flex: 1, padding: '10px' }}>
+            <h3>Transcription</h3>
+            <p>{transcription}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
