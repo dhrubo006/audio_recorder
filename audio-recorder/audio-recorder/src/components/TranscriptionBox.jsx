@@ -22,7 +22,7 @@ const TranscriptionBox = () => {
         flex: 1, 
         border: '1px solid black', 
         padding: '10px', 
-        marginRight: '10px', 
+        //marginRight: '5px', 
         height: '100vh', // Set height to 100% of the view height
         overflowY: 'auto' // Enable scrolling for overflow content
     }}>

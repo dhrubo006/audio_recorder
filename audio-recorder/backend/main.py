@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from datetime import datetime
@@ -43,6 +43,23 @@ async def upload_audio(file: UploadFile = File(...)):
 async def get_notes():
     notes = "These are some example notes about the audio."
     return {"notes": notes}
+
+
+@app.post("/save-notes")
+async def save_notes(request: Request):
+    data = await request.json()
+    notes = data.get("notes")
+    # Save the notes to a database or file (example logic)
+    print(f"Saving notes: {notes}")
+    return {"message": "Notes saved successfully"}
+
+
+@app.delete("/delete-notes")
+async def delete_notes():
+    # Delete the notes from a database or file (example logic)
+    print("Notes deleted")
+    return {"message": "Notes deleted successfully"}
+
 
 
 # New endpoint to get transcription
