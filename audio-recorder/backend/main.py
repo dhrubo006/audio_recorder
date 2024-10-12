@@ -1,8 +1,13 @@
-from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect, Request
+from fastapi import FastAPI, UploadFile, File, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from datetime import datetime
 import uvicorn
+
+# Importing the modules from src folder
+from src.audioStreamin import audio_stream
+from src.notes import get_notes, save_notes, delete_notes
+from src.transcriptions import get_transcription
 
 app = FastAPI()
 
@@ -20,8 +25,9 @@ UPLOAD_DIRECTORY = "./uploaded_audio"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 
+# Endpoint for uploading audio files
 @app.post("/upload-audio/")
-async def upload_audio(file: UploadFile = File(...)):   
+async def upload_audio(file: UploadFile = File(...)):
     try:
         # Save the audio file with a timestamp to avoid overwriting
         file_location = os.path.join(
@@ -38,52 +44,32 @@ async def upload_audio(file: UploadFile = File(...)):
         return {"message": f"Failed to upload audio: {str(e)}"}
 
 
-# New endpoint to get notes
+# Notes-related endpoints
 @app.get("/get-notes/")
-async def get_notes():
-    notes = "These are some example notes about the audio."
-    return {"notes": notes}
+async def handle_get_notes():
+    return await get_notes()
 
 
 @app.post("/save-notes")
-async def save_notes(request: Request):
-    data = await request.json()
-    notes = data.get("notes")
-    # Save the notes to a database or file (example logic)
-    print(f"Saving notes: {notes}")
-    return {"message": "Notes saved successfully"}
+async def handle_save_notes(request: Request):
+    return await save_notes(request)
 
 
 @app.delete("/delete-notes")
-async def delete_notes():
-    # Delete the notes from a database or file (example logic)
-    print("Notes deleted")
-    return {"message": "Notes deleted successfully"}
+async def handle_delete_notes():
+    return await delete_notes()
 
 
-
-# New endpoint to get transcription
+# Transcription-related endpoints
 @app.get("/get-transcription/")
-async def get_transcription():
-    transcription = "This is a dummy transcription of the audio."
-    return {"transcription": transcription}
+async def handle_get_transcription():
+    return await get_transcription()
 
 
-# WebSocket endpoint for streaming audio (optional, as it was previously used)
+# WebSocket for audio streaming
 @app.websocket("/audio-stream")
-async def audio_stream(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            data = await websocket.receive_bytes()
-            print("Received audio chunk:", data)
-
-    except WebSocketDisconnect:
-        print("WebSocket connection closed: Client disconnected.")
-    except Exception as e:
-        print(f"Error occurred: {e}")
-    finally:
-        await websocket.close()
+async def handle_audio_stream(websocket: WebSocket):
+    await audio_stream(websocket)
 
 
 if __name__ == "__main__":
