@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 
 const PopupForm = ({ onSave, onCancel }) => {
-  const [patientName, setPatientName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [patientBirthdate, setPatientBirthdate] = useState("");
 
-  // Handle name input change
-  const handleNameChange = (event) => {
-    setPatientName(event.target.value);
+  // Handle first name input change
+  const handleFirstNameChange = (event) => {
+    setFirstName(event.target.value);
   };
 
+  // Handle last name input change
+  const handleLastNameChange = (event) => {
+    setLastName(event.target.value);
+  };
   // Handle birthdate input change
   const handleBirthdateChange = (event) => {
     setPatientBirthdate(event.target.value);
@@ -16,11 +21,12 @@ const PopupForm = ({ onSave, onCancel }) => {
 
   // Call onSave when the save button is clicked
   const handleSubmit = () => {
-    if (!patientName || !patientBirthdate) {
+    if (!firstName || !lastName || !patientBirthdate) {
       alert("Please provide both your name and birthdate.");
       return;
     }
-    onSave(patientName, patientBirthdate);
+    const fullName = `${firstName} ${lastName}`;
+    onSave(fullName,firstName, lastName, patientBirthdate);
   };
 
   return (
@@ -28,13 +34,24 @@ const PopupForm = ({ onSave, onCancel }) => {
       <h3>Enter your details</h3>
       
       <label>
-        Name:
+        First Name:
         <input 
           type="text" 
-          value={patientName} 
-          onChange={handleNameChange} 
-          placeholder="Enter Patient's name" 
-          style={{ display: 'block', width: '100%',marginTop: '10px', marginBottom: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+          value={firstName} 
+          onChange={handleFirstNameChange} 
+          placeholder="Enter your first name" 
+          style={{ display: 'block', width: '100%', marginBottom: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+        />
+      </label>
+
+      <label>
+        Last Name:
+        <input 
+          type="text" 
+          value={lastName} 
+          onChange={handleLastNameChange} 
+          placeholder="Enter your last name" 
+          style={{ display: 'block', width: '100%', marginBottom: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
         />
       </label>
 
