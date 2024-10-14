@@ -1,107 +1,63 @@
 import React, { useState } from "react";
 
-const PopupForm = ({ onSave, onCancel, note }) => {
-  const [userName, setUserName] = useState("");  // State to track the user's name
-  const [userBirthdate, setUserBirthdate] = useState("");  // State to track the user's birthdate
+const PopupForm = ({ onSave, onCancel }) => {
+  const [patientName, setPatientName] = useState("");
+  const [patientBirthdate, setPatientBirthdate] = useState("");
 
-  // Handle form submission (when "Save" is clicked)
-  const handleSave = () => {
-    if (userName && userBirthdate) {
-      // Pass the name, birthdate, and note to the onSave function
-      onSave(userName, userBirthdate);
-    } else {
-      alert("Please enter both name and birthdate.");
+  // Handle name input change
+  const handleNameChange = (event) => {
+    setPatientName(event.target.value);
+  };
+
+  // Handle birthdate input change
+  const handleBirthdateChange = (event) => {
+    setPatientBirthdate(event.target.value);
+  };
+
+  // Call onSave when the save button is clicked
+  const handleSubmit = () => {
+    if (!patientName || !patientBirthdate) {
+      alert("Please provide both your name and birthdate.");
+      return;
     }
+    onSave(patientName, patientBirthdate);
   };
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.popup}>
-        <h3>Provide Your Details</h3>
-        <form>
-          <div style={styles.formGroup}>
-            <label>Name:</label>
-            <input 
-              type="text" 
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.formGroup}>
-            <label>Birthdate:</label>
-            <input 
-              type="date" 
-              value={userBirthdate}
-              onChange={(e) => setUserBirthdate(e.target.value)}
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.buttons}>
-            <button type="button" onClick={handleSave} style={styles.saveButton}>
-              Save
-            </button>
-            <button type="button" onClick={onCancel} style={styles.cancelButton}>
-              Cancel
-            </button>
-          </div>
-        </form>
+    <div style={{ padding: '20px' }}>
+      <h3>Enter your details</h3>
+      
+      <label>
+        Name:
+        <input 
+          type="text" 
+          value={patientName} 
+          onChange={handleNameChange} 
+          placeholder="Enter Patient's name" 
+          style={{ display: 'block', width: '100%',marginTop: '10px', marginBottom: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+        />
+      </label>
+
+      <label>
+        Birthdate:
+        <input 
+          type="date" 
+          value={patientBirthdate} 
+          onChange={handleBirthdateChange} 
+          style={{ display: 'block', width: '100%', marginTop: '10px', marginBottom: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+        />
+      </label>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <button onClick={handleSubmit} style={{ padding: '10px 20px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>
+          Save
+        </button>
+        <button onClick={onCancel} style={{ padding: '10px 20px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px' }}>
+          Cancel
+        </button>
       </div>
     </div>
   );
-};
-
-// Inline styles for the popup
-const styles = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  popup: {
-    backgroundColor: "#fff",
-    padding: "20px",
-    borderRadius: "5px",
-    width: "400px",
-    boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-  },
-  formGroup: {
-    marginBottom: "15px",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    fontSize: "14px",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-  },
-  buttons: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  saveButton: {
-    padding: "10px 20px",
-    backgroundColor: "green",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  cancelButton: {
-    padding: "10px 20px",
-    backgroundColor: "red",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
 };
 
 export default PopupForm;
