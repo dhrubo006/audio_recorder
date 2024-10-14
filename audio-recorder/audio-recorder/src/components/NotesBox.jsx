@@ -28,7 +28,7 @@ const NotesBox = () => {
   };
 
   // Save the notes with additional user info
-  const saveNotes = async (name, birthdate, closePopup) => {
+  const saveNotes = async (fullName, firstName, lastName, birthdate, closePopup) => {
     try {
       const response = await fetch("http://localhost:8000/save-notes", {
         method: "POST",
@@ -37,7 +37,9 @@ const NotesBox = () => {
         },
         body: JSON.stringify({ 
           notes, 
-          name: name, 
+          first_name: firstName,
+          last_name: lastName,
+          full_name: fullName, 
           birthdate: birthdate  
         }),
       });
@@ -105,7 +107,7 @@ const NotesBox = () => {
           >
             {close => (
               <PopupForm 
-                onSave={(name, birthdate) => saveNotes(name, birthdate, close)} 
+                onSave={(fullName, firstName, lastName, birthdate) => saveNotes(fullName, firstName, lastName, birthdate, close)} 
                 onCancel={close} 
               />
             )}
