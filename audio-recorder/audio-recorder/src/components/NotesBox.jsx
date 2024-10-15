@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Popup from "reactjs-popup";
 import "reactjs-popup/dist/index.css"; // Import the default styles
 import PopupForm from "./PopupForm"; // Import the PopupForm component
 
-const NotesBox = () => {
+const NotesBox = ({ onTextSelect }) => { // Expect onTextSelect as a prop from parent
   const [notes, setNotes] = useState("");
-
+  const textareaRef = useRef(null);
 
   // Fetch the initial notes when the component loads
   useEffect(() => {
@@ -26,6 +26,35 @@ const NotesBox = () => {
   const handleNotesChange = (event) => {
     setNotes(event.target.value);
   };
+
+  // Detect text selection in the document
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      console.log("Selection change event detected");
+      const selection = document.getSelection();
+      const selectedText = selection.toString();
+
+      // Check if the selected text is within the textarea
+      const textarea = textareaRef.current;
+
+      if (textarea && selectedText) {
+        // Check if the textarea is the active element and selection is inside it
+        const isWithinTextarea = textarea === document.activeElement;
+
+        if (isWithinTextarea) {
+          console.log("Selected text inside textarea:", selectedText); // Debugging
+          onTextSelect(selectedText); // Pass selected text to parent component
+        }
+      }
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+
+    // Cleanup the event listener when the component is unmounted
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, [onTextSelect]);
 
   // Save the notes with additional user info
   const saveNotes = async (firstName, lastName, fullName, birthdate, closePopup) => {
@@ -81,14 +110,14 @@ const NotesBox = () => {
   };
 
   return (
-    <div style={{ 
+    <div className="notes-box" style={{ 
         flex: 1, 
         border: '1px solid black', 
         padding: '10px', 
         marginRight: '10px', 
         height: '100vh', 
         overflowY: 'auto' 
-    }}>
+     }}>
       {/* Flex container for heading and buttons */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
         <h3>Notes</h3>
@@ -128,7 +157,8 @@ const NotesBox = () => {
       </div>
 
       {/* Editable textarea */}
-      <textarea 
+      <textarea
+        ref={textareaRef} 
         value={notes} 
         onChange={handleNotesChange} 
         style={{

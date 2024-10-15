@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import NotesBox from "./NotesBox";
 import TranscriptionBox from "./TranscriptionBox";
 
-const ResultPage = () => {
+const DisplayManager = () => {
+  const [selectedText, setSelectedText] = useState("");
+
+  // Handle selected text from NotesBox
+  const handleTextSelect = (text) => {
+    setSelectedText(text); // Pass selected text to Transcription or other components
+  };
+
+
   return (
     <div>
         <div style={{justifyContent: 'center'}}><h1>Result</h1></div>
@@ -13,8 +21,8 @@ const ResultPage = () => {
         padding: '20px', // Add some padding for visual spacing
         overflow: 'auto'
     }}>
-      <NotesBox />
-      <TranscriptionBox />
+      <NotesBox onTextSelect={handleTextSelect} />
+      <TranscriptionBox selectedText={selectedText} />
     </div>
     
 
@@ -23,4 +31,4 @@ const ResultPage = () => {
   );
 };
 
-export default ResultPage;
+export default DisplayManager;
