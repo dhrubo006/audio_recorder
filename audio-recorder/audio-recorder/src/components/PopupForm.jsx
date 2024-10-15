@@ -26,6 +26,11 @@ const PopupForm = ({ onSave, onCancel }) => {
       return;
     }
     const fullName = `${firstName} ${lastName}`;
+    // Log the values to ensure correct assignment
+    console.log("First Name:", firstName);
+    console.log("Last Name:", lastName);
+    console.log("Full Name:", fullName);
+    console.log("Birthdate:", patientBirthdate);
     onSave(firstName, lastName, fullName, patientBirthdate); // Pass first name, last name, full name, and birthdate
   };
 
