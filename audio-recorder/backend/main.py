@@ -20,28 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create a folder to store uploaded audio files
-UPLOAD_DIRECTORY = "./uploaded_audio"
-os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
-
-# Endpoint for uploading audio files
-@app.post("/upload-audio/")
-async def upload_audio(file: UploadFile = File(...)):
-    try:
-        # Save the audio file with a timestamp to avoid overwriting
-        file_location = os.path.join(
-            UPLOAD_DIRECTORY,
-            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}",
-        )
-
-        # Save the audio file
-        with open(file_location, "wb") as buffer:
-            buffer.write(await file.read())
-
-        return {"message": "Audio uploaded successfully", "file_path": file_location}
-    except Exception as e:
-        return {"message": f"Failed to upload audio: {str(e)}"}
 
 
 # Notes-related endpoints
