@@ -63,7 +63,7 @@ const AudioStreamer = () => {
     setRecorder(null);
 
     // Navigate to the result page after stopping the stream
-    navigate("/results");
+    navigate("/display");
   };
 
   const pauseStreaming = () => {

@@ -26,7 +26,7 @@ const PopupForm = ({ onSave, onCancel }) => {
       return;
     }
     const fullName = `${firstName} ${lastName}`;
-    onSave(fullName,firstName, lastName, patientBirthdate);
+    onSave(firstName, lastName, fullName, patientBirthdate);
   };
 
   return (
