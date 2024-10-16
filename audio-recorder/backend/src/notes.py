@@ -1,9 +1,10 @@
 from fastapi import Request
-
+import asyncio
 
 
 # Get notes
 async def get_notes():
+    await asyncio.sleep(3)  # Delay for 3 seconds to simulate a longer fetch time
     notes = "These are some example notes about the audio."
     return {"notes": notes}
 
